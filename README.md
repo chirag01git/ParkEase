@@ -17,11 +17,29 @@ The project is built using React, Node.js, Express.js and MongoDB. It also inclu
 - Admin and owner dashboards
 - Protection against double booking when multiple users try to book the same slot
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-- **Backend**: Node.js, Express.js, MongoDB, Mongoose, JWT (`jsonwebtoken`), `bcryptjs`, `qrcode`, `cors`, `dotenv`, `morgan`.
-- **Frontend**: React 18, Vite, React Router DOM v6, Axios, Lucide Icons, `qrcode.react`, custom responsive CSS.
-- **Database**: MongoDB (Local or Atlas URI).
+### Frontend
+- React.js
+- Vite
+- React Router
+- Axios
+- Lucide React
+- CSS
+
+### Backend
+- Node.js
+- Express.js
+- JWT
+- bcryptjs
+- QR Code
+- CORS
+- dotenv
+- Morgan
+
+### Database
+- MongoDB
+- Mongoose
 
 ---
 
