@@ -43,7 +43,7 @@ The project is built using React, Node.js, Express.js and MongoDB. It also inclu
 
 ---
 
-## 📁 Project Architecture & Directory Structure
+## Project Architecture & Directory Structure
 
 ```
 ParkEase/
@@ -101,7 +101,7 @@ ParkEase/
 
 ---
 
-## 🔑 Test Credentials (Seed Data)
+## Test Credentials (Seed Data)
 
 Running `npm run seed` in `ParkEase/backend` populates the database with:
 
@@ -119,7 +119,7 @@ Running `npm run seed` in `ParkEase/backend` populates the database with:
 
 ---
 
-## 🚀 Installation & Running Instructions
+## Installation & Running Instructions
 
 ### Prerequisites:
 - **Node.js**: v18+
@@ -146,7 +146,7 @@ npm run dev
 
 ---
 
-## 🧪 Automated Testing & Concurrency Verification
+## Automated Testing & Concurrency Verification
 
 Run automated test suites inside `ParkEase/backend`:
 
