@@ -10,7 +10,7 @@ const authenticateToken = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'parkease_super_secret_jwt_key_2026');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded; // { userId, role, email, name }
     next();
   } catch (error) {
