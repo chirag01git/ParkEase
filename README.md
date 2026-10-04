@@ -186,7 +186,7 @@ if (!allocatedSlot) {
 ### 2. One Active Booking Per User
 
 A user cannot have more than one active parking booking at a time. Before creating a new booking, the backend checks whether the user already has a booking with BOOKED or ACTIVE status.
-```
+```javascript
 const activeBooking = await Booking.findOne({
   user: userId,
   bookingStatus: { $in: ['BOOKED', 'ACTIVE'] },
@@ -209,7 +209,7 @@ After exit, the parking slot is released and becomes AVAILABLE again.
 ### 4. Dashboard Data
 
 The dashboards show information such as total slots, available slots, occupied slots, bookings and revenue. These independent database queries are executed together using Promise.all().
-```
+```javascript
 const [
   totalSlots,
   availableSlots,
