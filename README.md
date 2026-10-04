@@ -160,10 +160,11 @@ npm run test:concurrency
 
 ---
 
-## 📖 Deep Technical Explanations
+## How It Works
 
-### 1. Atomic Slot Allocation (`findOneAndUpdate`)
-To prevent double-booking when two users attempt to reserve the last available slot simultaneously, slot allocation is executed in a single atomic MongoDB operation:
+### 1. Parking Slot Allocation
+
+When a user books a parking slot, the backend looks for an available slot matching the selected vehicle type. The slot is updated in the same database operation, which helps prevent two users from getting the same slot when they try to book at nearly the same time.
 
 ```javascript
 const allocatedSlot = await ParkingSlot.findOneAndUpdate(
@@ -181,30 +182,41 @@ const allocatedSlot = await ParkingSlot.findOneAndUpdate(
 if (!allocatedSlot) {
   return sendError(res, 'No parking slots available for this vehicle type.', 400);
 }
-```
 
-### 2. Single Active Booking Constraint
-Server-side validation ensures a user cannot create multiple active reservations while holding a `BOOKED` or `ACTIVE` pass:
+2. One Active Booking Per User
 
-```javascript
+A user cannot have more than one active parking booking at a time. Before creating a new booking, the backend checks whether the user already has a booking with BOOKED or ACTIVE status.
+
 const activeBooking = await Booking.findOne({
   user: userId,
   bookingStatus: { $in: ['BOOKED', 'ACTIVE'] },
 });
+
 if (activeBooking) {
   return sendError(res, 'You already have an active parking booking.', 400);
 }
-```
+3. Entry, Exit and Billing
 
-### 3. State Machine Transitions & Gate Logic
-- **Entry**: `BOOKED` $\rightarrow$ `ACTIVE`. Sets server `entryTime` date. Rejects duplicate entry or exit prior to entry.
-- **Exit**: `ACTIVE` $\rightarrow$ `COMPLETED`. Sets server `exitTime` date, computes duration and billing amount, and releases parking slot back to `AVAILABLE`.
+The booking goes through different states during the parking process:
 
-### 4. `Promise.all()` Dashboard Analytics Optimization
-Independent MongoDB aggregation queries execute in parallel to maximize throughput:
+BOOKED → ACTIVE when the guard verifies the vehicle at entry.
+ACTIVE → COMPLETED when the vehicle exits.
+Entry and exit times are recorded by the server.
+The parking fee is calculated using the parking duration.
+After exit, the parking slot is released and becomes AVAILABLE again.
 
-```javascript
-const [totalSlots, availableSlots, occupiedSlots, totalBookings, completedBookings, revenueResult] = await Promise.all([
+4. Dashboard Data
+
+The dashboards show information such as total slots, available slots, occupied slots, bookings and revenue. These independent database queries are executed together using Promise.all().
+
+const [
+  totalSlots,
+  availableSlots,
+  occupiedSlots,
+  totalBookings,
+  completedBookings,
+  revenueResult
+] = await Promise.all([
   ParkingSlot.countDocuments({ mall: id }),
   ParkingSlot.countDocuments({ mall: id, status: 'AVAILABLE' }),
   ParkingSlot.countDocuments({ mall: id, status: 'OCCUPIED' }),
@@ -215,9 +227,6 @@ const [totalSlots, availableSlots, occupiedSlots, totalBookings, completedBookin
     { $group: { _id: null, totalRevenue: { $sum: '$amount' } } },
   ]),
 ]);
-```
-
----
 
 ## 💼 How This Project Demonstrates Resume Claims
 
