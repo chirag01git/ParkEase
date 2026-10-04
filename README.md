@@ -83,7 +83,6 @@ ParkEase/
 │   │   └── seed.js                   # Database seed script
 │   ├── test-flow.js                  # Comprehensive API test suite
 │   ├── test-concurrency.js            # Race condition verification test
-│   ├── .env
 │   ├── .env.example
 │   └── package.json
 └── frontend/
