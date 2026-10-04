@@ -38,7 +38,7 @@ const register = async (req, res, next) => {
 
     const token = jwt.sign(
       { userId: user._id, role: user.role, email: user.email, name: user.name },
-      process.env.JWT_SECRET || 'parkease_super_secret_jwt_key_2026',
+      process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
@@ -69,7 +69,7 @@ const login = async (req, res, next) => {
 
     const token = jwt.sign(
       { userId: user._id, role: user.role, email: user.email, name: user.name },
-      process.env.JWT_SECRET || 'parkease_super_secret_jwt_key_2026',
+      process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
