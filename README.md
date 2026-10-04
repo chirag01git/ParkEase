@@ -183,7 +183,7 @@ if (!allocatedSlot) {
   return sendError(res, 'No parking slots available for this vehicle type.', 400);
 }
 ```
-2. One Active Booking Per User
+###2. One Active Booking Per User
 
 A user cannot have more than one active parking booking at a time. Before creating a new booking, the backend checks whether the user already has a booking with BOOKED or ACTIVE status.
 ```
@@ -196,7 +196,7 @@ if (activeBooking) {
   return sendError(res, 'You already have an active parking booking.', 400);
 }
 ```
-3. Entry, Exit and Billing
+###3. Entry, Exit and Billing
 
 The booking goes through different states during the parking process:
 
@@ -206,7 +206,7 @@ Entry and exit times are recorded by the server.
 The parking fee is calculated using the parking duration.
 After exit, the parking slot is released and becomes AVAILABLE again.
 
-4. Dashboard Data
+###4. Dashboard Data
 
 The dashboards show information such as total slots, available slots, occupied slots, bookings and revenue. These independent database queries are executed together using Promise.all().
 ```
