@@ -230,15 +230,3 @@ const [
 ]);
 ```
 
-## 💼 How This Project Demonstrates Resume Claims
-
-1. **Role-Based Access Control (RBAC)**: Implemented via custom JWT authentication & `authorizeRoles()` middleware.
-2. **Mall Approval Workflow**: Strict status lifecycle (`PENDING` $\rightarrow$ `APPROVED` / `REJECTED`) where only approved malls are exposed for user booking.
-3. **Automated Slot Allocation**: Zero manual slot pick needed; system selects available slots automatically.
-4. **Atomic findOneAndUpdate**: Eliminates race conditions under concurrent workloads.
-5. **One-Active-Booking Constraint**: Strict server-enforced business rule preventing multiple simultaneous reservations.
-6. **QR-Based Verification**: Server-side QR token generation and gate verification without trusting frontend state.
-7. **Server-Side Validation**: All timestamps, status transitions, duration, and price math occur strictly on backend.
-8. **State Machine Transitions**: Clean `BOOKED` $\rightarrow$ `ACTIVE` $\rightarrow$ `COMPLETED` flow.
-9. **Duration Billing Engine**: Dynamic hour-based pricing math for Cars and Bikes.
-10. **Promise.all Analytics Optimization**: High-performance parallel MongoDB query execution for analytics dashboards.
