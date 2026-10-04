@@ -1,38 +1,21 @@
 # ParkEase – Mall Parking Management System
 
-**ParkEase** is a full-stack, enterprise-ready **Mall Parking Management System** built with **Node.js, Express.js, MongoDB (Mongoose), JWT Auth (RBAC), and React (Vite)**.
+ParkEase is a web-based parking management system for malls. It allows users to book parking slots, guards to verify vehicle entry and exit using QR codes, and mall owners to manage their parking areas.
 
-It delivers real-time atomic slot allocation to eliminate double-booking race conditions, QR code gate entry/exit verification, duration-based server-side billing calculation, and parallelized MongoDB dashboard analytics using `Promise.all()`.
+The project is built using React, Node.js, Express.js and MongoDB. It also includes JWT-based authentication with different roles for users, mall owners, guards and admins.
 
----
+## Main Features
 
-## 🌟 Key Features
-
-1. **Role-Based Access Control (RBAC)**
-   - 4 distinct roles: `USER`, `MALL_OWNER`, `GUARD`, `ADMIN`.
-   - JWT authentication and authorization middleware protecting endpoints.
-2. **Atomic Slot Allocation (`findOneAndUpdate`)**
-   - Eliminates double-booking race conditions when multiple users attempt to reserve the final available slot simultaneously.
-3. **Single Active Booking Enforcement**
-   - Server-side rule preventing users from creating multiple active reservations (`BOOKED` or `ACTIVE`).
-4. **QR Code Gate Verification**
-   - Unique QR token generated per booking.
-   - Guard portal verifies gate entry (`BOOKED` $\rightarrow$ `ACTIVE`) and exit (`ACTIVE` $\rightarrow$ `COMPLETED`).
-5. **Timestamp & Server-Calculated Billing Engine**
-   - Pricing based on actual server-side `entryTime` and `exitTime`.
-   - **CAR**: ₹50 for 1st hour + ₹30 for each additional hour.
-   - **BIKE**: ₹30 for 1st hour + ₹20 for each additional hour.
-6. **Automatic Parking Slot Release**
-   - Successful exit verification automatically sets slot status back to `AVAILABLE`.
-7. **Mall Approval Workflow**
-   - Malls created by owners start as `PENDING`. Only `ADMIN` can approve or reject malls.
-   - Users can only view and book parking for `APPROVED` malls.
-8. **Owner Authorization Scoping**
-   - Mall owners can only inspect and manage slots/analytics for malls they own.
-9. **`Promise.all()` Dashboard Analytics Optimization**
-   - Independent aggregation and count queries execute concurrently for optimal response speed.
-
----
+- User registration and login
+- Different access levels for User, Mall Owner, Guard and Admin
+- Automatic parking slot allocation
+- Parking booking and cancellation
+- QR-based entry and exit verification
+- Automatic parking fee calculation
+- Mall approval system
+- Parking slot management
+- Admin and owner dashboards
+- Protection against double booking when multiple users try to book the same slot
 
 ## 🛠️ Tech Stack
 
