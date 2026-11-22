@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getMyBookingsApi, getMallsApi } from '../../api/services';
+import { deleteBookingHistoryApi, getMyBookingsApi, getMallsApi } from '../../api/services';
 import StatusBadge from '../../components/StatusBadge';
 import QrModal from '../../components/QrModal';
-import { Building2, Ticket, QrCode, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Building2, Ticket, QrCode, ArrowRight, ShieldCheck, CreditCard, X } from 'lucide-react';
 
 const UserDashboard = () => {
   const [bookings, setBookings] = useState([]);
@@ -29,12 +29,22 @@ const UserDashboard = () => {
   };
 
   const activeBooking = bookings.find(
-    (b) => b.bookingStatus === 'BOOKED' || b.bookingStatus === 'ACTIVE'
+    (b) => ['BOOKED', 'ACTIVE', 'PAYMENT_PENDING', 'PAYMENT_PAID'].includes(b.bookingStatus)
   );
 
   const openQr = (booking) => {
     setSelectedBooking(booking);
     setIsQrOpen(true);
+  };
+
+  const deleteHistory = async (booking) => {
+    if (!window.confirm(`Delete booking history #${booking._id.slice(-6)}? This cannot be undone.`)) return;
+    try {
+      await deleteBookingHistoryApi(booking._id);
+      setBookings((current) => current.filter((item) => item._id !== booking._id));
+    } catch (err) {
+      window.alert(err.response?.data?.message || 'Could not delete this booking history item.');
+    }
   };
 
   return (
@@ -114,9 +124,15 @@ const UserDashboard = () => {
             </div>
 
             <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <button className="btn btn-primary" onClick={() => openQr(activeBooking)}>
-                <QrCode size={18} /> Show Gate QR Ticket
-              </button>
+              {activeBooking.bookingStatus === 'PAYMENT_PENDING' ? (
+                <Link to={`/user/bookings/${activeBooking._id}/pay`} className="btn btn-primary"><CreditCard size={18} /> Pay Parking Bill</Link>
+              ) : activeBooking.bookingStatus === 'PAYMENT_PAID' ? (
+                <span className="btn btn-secondary" style={{ cursor: 'default' }}><CreditCard size={18} /> Paid — Awaiting Guard Release</span>
+              ) : (
+                <button className="btn btn-primary" onClick={() => openQr(activeBooking)}>
+                  <QrCode size={18} /> Show Gate QR Ticket
+                </button>
+              )}
               <Link to={`/user/bookings/${activeBooking._id}`} className="btn btn-outline">
                 View Ticket Details
               </Link>
@@ -170,6 +186,11 @@ const UserDashboard = () => {
                       <button className="btn btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => openQr(b)}>
                         <QrCode size={14} /> QR Pass
                       </button>
+                      {['COMPLETED', 'CANCELLED'].includes(b.bookingStatus) && (
+                        <button className="btn btn-danger" title="Delete booking history" style={{ padding: '0.25rem 0.45rem', marginLeft: '0.4rem' }} onClick={() => deleteHistory(b)}>
+                          <X size={15} />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

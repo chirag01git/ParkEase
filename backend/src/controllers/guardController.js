@@ -89,6 +89,9 @@ const verifyExit = async (req, res, next) => {
     if (booking.bookingStatus === 'COMPLETED') {
       return sendError(res, 'Exit verification failed. Booking has ALREADY been completed / exited.', 400);
     }
+    if (booking.bookingStatus === 'PAYMENT_PENDING') {
+      return sendError(res, 'Exit has already been recorded. This booking is awaiting payment.', 400);
+    }
     if (booking.bookingStatus === 'CANCELLED') {
       return sendError(res, 'Exit verification failed. Booking was CANCELLED.', 400);
     }
@@ -105,21 +108,16 @@ const verifyExit = async (req, res, next) => {
     // Server-side duration and billing calculation
     const billing = calculateBilling(booking.entryTime, exitTime, booking.vehicleType);
 
-    // Update booking state: ACTIVE -> COMPLETED
+    // Update booking state: ACTIVE -> PAYMENT_PENDING. Completion happens only after payment verification.
     booking.exitTime = exitTime;
     booking.duration = billing.duration;
     booking.amount = billing.amount;
-    booking.bookingStatus = 'COMPLETED';
+    booking.paymentStatus = 'PENDING';
+    booking.bookingStatus = 'PAYMENT_PENDING';
     await booking.save();
 
-    // REQUIREMENT 6: Release slot status back to AVAILABLE
-    let slotReleased = false;
-    if (booking.slot) {
-      await ParkingSlot.findByIdAndUpdate(booking.slot._id, { status: 'AVAILABLE' });
-      slotReleased = true;
-    }
-
-    return sendSuccess(res, 'Gate exit verified successfully. Parking payment bill calculated and slot released.', {
+    // Keep the slot occupied. It is released only after the paid bill is confirmed by a guard.
+    return sendSuccess(res, 'Parking bill calculated. Collect payment before releasing the vehicle.', {
       booking,
       summary: {
         vehicleNumber: booking.vehicleNumber,
@@ -128,9 +126,48 @@ const verifyExit = async (req, res, next) => {
         exitTime: booking.exitTime,
         durationInHours: billing.duration,
         totalAmount: billing.amount,
-        slotReleased,
+        slotReleased: false,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /api/guard/bookings/:id/release (Release only a verified paid vehicle)
+const releasePaidVehicle = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const booking = await Booking.findById(id)
+      .populate('mall', 'name')
+      .populate('slot', 'slotNumber');
+
+    if (!booking) return sendError(res, 'Booking not found', 404);
+    if (booking.bookingStatus !== 'PAYMENT_PAID' || booking.paymentStatus !== 'PAID') {
+      return sendError(res, 'Vehicle cannot be released until the parking payment is verified.', 400);
+    }
+
+    booking.bookingStatus = 'COMPLETED';
+    await booking.save();
+    if (booking.slot) await ParkingSlot.findByIdAndUpdate(booking.slot._id, { status: 'AVAILABLE' });
+
+    return sendSuccess(res, 'Payment confirmed. Vehicle released and parking slot is now available.', { booking });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /api/guard/payments (Recent exited bookings and their payment state)
+const getRecentPayments = async (req, res, next) => {
+  try {
+    const payments = await Booking.find({ bookingStatus: { $in: ['PAYMENT_PENDING', 'PAYMENT_PAID', 'COMPLETED'] } })
+      .populate('mall', 'name city')
+      .populate('slot', 'slotNumber')
+      .populate('user', 'name phone')
+      .sort({ exitTime: -1 })
+      .limit(25);
+
+    return sendSuccess(res, 'Recent payment statuses retrieved.', { payments });
   } catch (error) {
     next(error);
   }
@@ -139,4 +176,6 @@ const verifyExit = async (req, res, next) => {
 module.exports = {
   verifyEntry,
   verifyExit,
+  releasePaidVehicle,
+  getRecentPayments,
 };

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getBookingByIdApi } from '../../api/services';
 import StatusBadge from '../../components/StatusBadge';
 import { QRCodeSVG } from 'qrcode.react';
-import { ArrowLeft, Clock, DollarSign, CheckCircle2, QrCode } from 'lucide-react';
+import { ArrowLeft, Clock, DollarSign, CheckCircle2, QrCode, CreditCard } from 'lucide-react';
 
 const BookingDetail = () => {
   const { id } = useParams();
@@ -46,23 +46,29 @@ const BookingDetail = () => {
         </div>
 
         {/* State Machine Flow Indicator */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', background: '#0f172a', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem', border: '1px solid #334155' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.5rem', background: '#0f172a', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem', border: '1px solid #334155' }}>
           <div style={{ textAlign: 'center', opacity: booking.bookingStatus === 'BOOKED' ? 1 : 0.6 }}>
             <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>STEP 1</div>
             <div style={{ fontWeight: 700, color: '#fbbf24' }}>BOOKED</div>
           </div>
-
-          <div style={{ alignSelf: 'center', color: '#475569' }}>➔</div>
 
           <div style={{ textAlign: 'center', opacity: booking.bookingStatus === 'ACTIVE' ? 1 : 0.6 }}>
             <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>STEP 2</div>
             <div style={{ fontWeight: 700, color: '#60a5fa' }}>ACTIVE (Parked)</div>
           </div>
 
-          <div style={{ alignSelf: 'center', color: '#475569' }}>➔</div>
+          <div style={{ textAlign: 'center', opacity: booking.bookingStatus === 'PAYMENT_PENDING' ? 1 : 0.6 }}>
+            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>STEP 3</div>
+            <div style={{ fontWeight: 700, color: '#fbbf24' }}>PAYMENT DUE</div>
+          </div>
+
+          <div style={{ textAlign: 'center', opacity: booking.bookingStatus === 'PAYMENT_PAID' ? 1 : 0.6 }}>
+            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>STEP 4</div>
+            <div style={{ fontWeight: 700, color: '#34d399' }}>PAID</div>
+          </div>
 
           <div style={{ textAlign: 'center', opacity: booking.bookingStatus === 'COMPLETED' ? 1 : 0.6 }}>
-            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>STEP 3</div>
+            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>STEP 5</div>
             <div style={{ fontWeight: 700, color: '#34d399' }}>COMPLETED</div>
           </div>
         </div>
@@ -97,7 +103,7 @@ const BookingDetail = () => {
               </div>
             </div>
 
-            {booking.bookingStatus === 'COMPLETED' && (
+            {['PAYMENT_PENDING', 'PAYMENT_PAID', 'COMPLETED'].includes(booking.bookingStatus) && (
               <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '0.85rem', borderRadius: '8px', marginTop: '1rem' }}>
                 <div style={{ fontSize: '0.8rem', color: '#34d399', fontWeight: 600 }}>PARKING BILL SUMMARY</div>
                 <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>
@@ -114,6 +120,20 @@ const BookingDetail = () => {
             </div>
           </div>
         </div>
+
+        {['PAYMENT_PENDING', 'PAYMENT_PAID', 'COMPLETED'].includes(booking.bookingStatus) && booking.amount > 0 && (
+          <div style={{ marginTop: '1.5rem', padding: '1rem', borderRadius: '10px', border: `1px solid ${booking.paymentStatus === 'PAID' ? 'rgba(16,185,129,.45)' : 'rgba(59,130,246,.45)'}`, background: booking.paymentStatus === 'PAID' ? 'rgba(16,185,129,.08)' : 'rgba(59,130,246,.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+            <div>
+              <div style={{ fontWeight: 700, color: booking.paymentStatus === 'PAID' ? '#34d399' : '#fff' }}>
+                {booking.paymentStatus === 'PAID' ? (booking.bookingStatus === 'PAYMENT_PAID' ? 'Payment complete — awaiting guard release' : 'Payment complete') : `Parking bill: ₹${booking.amount}`}
+              </div>
+              <div style={{ fontSize: '0.82rem', color: '#94a3b8', marginTop: '0.25rem' }}>
+                {booking.paymentStatus === 'PAID' ? `Paid via ${booking.paymentMethod} · The guard will release the vehicle next.` : 'Continue to Razorpay to choose a payment method.'}
+              </div>
+            </div>
+            {booking.paymentStatus !== 'PAID' && <Link to={`/user/bookings/${booking._id}/pay`} className="btn btn-primary"><CreditCard size={16} /> Pay Now</Link>}
+          </div>
+        )}
       </div>
     </div>
   );

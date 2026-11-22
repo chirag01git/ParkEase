@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getMyBookingsApi, cancelBookingApi } from '../../api/services';
+import { getMyBookingsApi, cancelBookingApi, deleteBookingHistoryApi } from '../../api/services';
 import StatusBadge from '../../components/StatusBadge';
 import QrModal from '../../components/QrModal';
-import { QrCode, XCircle, Eye, AlertCircle } from 'lucide-react';
+import { QrCode, XCircle, Eye, AlertCircle, CreditCard, CheckCircle2, Trash2 } from 'lucide-react';
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -51,11 +51,27 @@ const MyBookings = () => {
     setIsQrOpen(true);
   };
 
+  const deleteHistory = async (booking) => {
+    if (!window.confirm(`Delete booking history #${booking._id.slice(-6)}? This cannot be undone.`)) return;
+    setError('');
+    try {
+      await deleteBookingHistoryApi(booking._id);
+      setSuccess('Booking history item deleted.');
+      setBookings((current) => current.filter((item) => item._id !== booking._id));
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not delete this booking history item.');
+    }
+  };
+
   return (
     <div>
       <div style={{ marginBottom: '1.5rem' }}>
         <h1 className="page-title">My Parking Reservations</h1>
         <p className="page-subtitle">View your active and past parking tickets</p>
+      </div>
+
+      <div className="alert alert-info">
+        <AlertCircle size={18} /> After guard exit verification, your booking stays Payment Due until you complete payment. Only then is it marked Completed.
       </div>
 
       {error && <div className="alert alert-danger"><AlertCircle size={18} /> {error}</div>}
@@ -85,6 +101,7 @@ const MyBookings = () => {
                   <th>Entry Time</th>
                   <th>Exit Time</th>
                   <th>Bill Amount</th>
+                  <th>Payment</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -101,6 +118,7 @@ const MyBookings = () => {
                     <td>{b.entryTime ? new Date(b.entryTime).toLocaleTimeString() : '-'}</td>
                     <td>{b.exitTime ? new Date(b.exitTime).toLocaleTimeString() : '-'}</td>
                     <td>{b.amount ? `₹${b.amount}` : '-'}</td>
+                    <td>{['PAYMENT_PENDING', 'PAYMENT_PAID', 'COMPLETED'].includes(b.bookingStatus) && b.amount > 0 ? <StatusBadge status={b.paymentStatus || 'PENDING'} /> : '-'}</td>
                     <td>
                       <div style={{ display: 'flex', gap: '0.4rem' }}>
                         <button className="btn btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => openQr(b)}>
@@ -111,9 +129,27 @@ const MyBookings = () => {
                           <Eye size={14} />
                         </Link>
 
+                        {b.bookingStatus === 'PAYMENT_PENDING' && b.amount > 0 && b.paymentStatus !== 'PAID' && (
+                          <Link to={`/user/bookings/${b._id}/pay`} className="btn btn-primary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
+                            <CreditCard size={14} /> Pay Now
+                          </Link>
+                        )}
+
+                        {b.paymentStatus === 'PAID' && (
+                          <span title={`Paid via ${b.paymentMethod || 'payment method'}`} style={{ color: '#34d399', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.78rem', fontWeight: 700 }}>
+                            <CheckCircle2 size={16} /> {b.bookingStatus === 'PAYMENT_PAID' ? 'Awaiting release' : 'Paid'}
+                          </span>
+                        )}
+
                         {b.bookingStatus === 'BOOKED' && (
                           <button className="btn btn-danger" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => handleCancel(b._id)}>
                             <XCircle size={14} /> Cancel
+                          </button>
+                        )}
+
+                        {['COMPLETED', 'CANCELLED'].includes(b.bookingStatus) && (
+                          <button className="btn btn-danger" title="Delete booking history" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => deleteHistory(b)}>
+                            <Trash2 size={14} />
                           </button>
                         )}
                       </div>

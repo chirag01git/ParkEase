@@ -8,6 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Public Pages
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 
 // User Pages
 import UserDashboard from './pages/user/UserDashboard';
@@ -16,6 +17,7 @@ import MallDetail from './pages/user/MallDetail';
 import BookingCreate from './pages/user/BookingCreate';
 import MyBookings from './pages/user/MyBookings';
 import BookingDetail from './pages/user/BookingDetail';
+import PaymentCheckout from './pages/user/PaymentCheckout';
 
 // Guard Pages
 import GuardDashboard from './pages/guard/GuardDashboard';
@@ -56,6 +58,7 @@ function App() {
                 {/* Public Routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/" element={<RootRedirect />} />
 
                 {/* USER Routes */}
@@ -66,6 +69,7 @@ function App() {
                   <Route path="/user/book/:mallId" element={<BookingCreate />} />
                   <Route path="/user/bookings" element={<MyBookings />} />
                   <Route path="/user/bookings/:id" element={<BookingDetail />} />
+                  <Route path="/user/bookings/:id/pay" element={<PaymentCheckout />} />
                 </Route>
 
                 {/* GUARD Routes */}

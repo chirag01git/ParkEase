@@ -38,7 +38,7 @@ const bookingSchema = new mongoose.Schema(
     },
     bookingStatus: {
       type: String,
-      enum: ['BOOKED', 'ACTIVE', 'COMPLETED', 'CANCELLED'],
+      enum: ['BOOKED', 'ACTIVE', 'PAYMENT_PENDING', 'PAYMENT_PAID', 'COMPLETED', 'CANCELLED'],
       default: 'BOOKED',
       index: true,
     },
@@ -57,6 +57,29 @@ const bookingSchema = new mongoose.Schema(
     amount: {
       type: Number, // in INR
       default: 0,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['PENDING', 'PAID'],
+      default: 'PENDING',
+      index: true,
+    },
+    paymentMethod: {
+      type: String,
+      enum: ['UPI', 'CARD', 'NET_BANKING', 'RAZORPAY'],
+      default: null,
+    },
+    razorpayOrderId: {
+      type: String,
+      default: null,
+    },
+    paymentReference: {
+      type: String,
+      default: null,
+    },
+    paidAt: {
+      type: Date,
+      default: null,
     },
   },
   {

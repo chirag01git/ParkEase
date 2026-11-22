@@ -10,10 +10,13 @@ const StatusBadge = ({ status }) => {
     case 'APPROVED':
     case 'AVAILABLE':
     case 'COMPLETED':
+    case 'PAID':
+    case 'PAYMENT_PAID':
       className += 'badge-approved';
       break;
     case 'PENDING':
     case 'BOOKED':
+    case 'PAYMENT_PENDING':
       className += 'badge-pending';
       break;
     case 'REJECTED':
@@ -28,7 +31,11 @@ const StatusBadge = ({ status }) => {
       className += 'badge-pending';
   }
 
-  return <span className={className}>{s}</span>;
+  const labels = {
+    PAYMENT_PENDING: 'PAYMENT DUE',
+    PAYMENT_PAID: 'PAID · RELEASE DUE',
+  };
+  return <span className={className}>{labels[s] || s}</span>;
 };
 
 export default StatusBadge;

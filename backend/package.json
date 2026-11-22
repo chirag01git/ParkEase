@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
+    "setup": "node src/setup.js",
     "seed": "node src/seed.js",
     "test:flow": "node test-flow.js",
     "test:concurrency": "node test-concurrency.js"
@@ -19,6 +20,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.4.1",
     "morgan": "^1.10.0",
+    "nodemailer": "^10.6.1",
     "qrcode": "^1.5.3"
   }
 }
